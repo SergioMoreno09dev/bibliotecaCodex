@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Auditoría')}"></head>
+<body>
+<div class="app-shell">
+    <nav th:replace="~{fragments/nav :: sidebar('audit','admin')}"></nav>
+    <main class="app-content p-3 p-lg-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+            <h1 class="view-title mb-0">Auditoría</h1>
+            <form class="d-flex gap-2"
+                  th:action="@{/admin/audit-logs}"
+                  method="get">
+                <input class="form-control"
+                       type="number"
+                       name="userId"
+                       min="1"
+                       th:value="${param.userId}"
+                       placeholder="ID usuario">
+                <button class="btn btn-outline-primary" type="submit">
+                    <i class="bi bi-filter"></i>
+                </button>
+            </form>
+        </div>
+        <section class="bg-white border rounded-3">
+            <div class="table-responsive">
+                <table class="table table-striped mb-0">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Usuario</th>
+                        <th>Acción</th>
+                        <th>Descripción</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="log : ${auditLogs}">
+                        <td th:text="${log.id}"></td>
+                        <td th:text="${log.actionDate != null ? #dates.format(log.actionDate,'yyyy-MM-dd HH:mm') : ''}"></td>
+                        <td th:text="${log.user?.name}"></td>
+                        <td th:text="${log.action}"></td>
+                        <td th:text="${log.description}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(auditLogs)}">
+                        <td colspan="5" class="text-center text-secondary py-4">
+                            No hay eventos de auditoría.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/assets/js/codexlibrary.js}" src="/assets/js/codexlibrary.js"></script>
+</body>
+</html>

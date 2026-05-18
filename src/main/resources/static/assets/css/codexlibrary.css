@@ -1,0 +1,79 @@
+:root {
+    --cl-sidebar-width: 280px;
+}
+
+body {
+    background: #f5f7fb;
+}
+
+.app-shell {
+    min-height: 100vh;
+}
+
+.app-sidebar {
+    background: #172033;
+    color: #fff;
+}
+
+.app-sidebar .navbar-brand,
+.app-sidebar .nav-link {
+    color: rgba(255, 255, 255, .78);
+}
+
+.app-sidebar .nav-link.active,
+.app-sidebar .nav-link:hover {
+    background: rgba(255, 255, 255, .12);
+    color: #fff;
+}
+
+.app-content {
+    min-width: 0;
+}
+
+.view-title {
+    font-size: clamp(1.35rem, 2vw, 1.9rem);
+}
+
+.metric-card {
+    border: 0;
+    border-left: 4px solid #0d6efd;
+}
+
+.table thead th {
+    white-space: nowrap;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.row-expired {
+    --bs-table-bg: #fff3cd;
+    --bs-table-striped-bg: #ffe8a1;
+    border-left: 4px solid #dc3545;
+}
+
+.status-badge {
+    letter-spacing: 0;
+}
+
+.form-error {
+    min-height: 1.25rem;
+}
+
+.auth-panel {
+    width: min(100%, 440px);
+}
+
+@media (min-width: 1024px) {
+    .app-shell {
+        display: grid;
+        grid-template-columns: var(--cl-sidebar-width) minmax(0, 1fr);
+    }
+
+    .app-sidebar {
+        min-height: 100vh;
+        position: sticky;
+        top: 0;
+    }
+}

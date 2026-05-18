@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head('Notificaciones')}"></head>
+
+<body>
+
+<div class="app-shell">
+
+    <nav th:replace="~{fragments/nav :: sidebar('notifications','reader')}"></nav>
+
+    <main class="app-content p-3 p-lg-4">
+
+        <h1 class="view-title mb-4">
+            Notificaciones
+        </h1>
+
+        <section class="bg-white border rounded-3">
+
+            <div class="list-group list-group-flush">
+
+                <div class="list-group-item"
+                     th:each="notification : ${notifications}"
+                     th:classappend="${notification.read ? '' : ' bg-primary-subtle'}">
+
+                    <div class="d-flex justify-content-between gap-3">
+
+                        <div>
+
+                                <span class="badge mb-2"
+                                      th:classappend="${notification.type == 'VENCIMIENTO' ? ' text-bg-warning' : ' text-bg-primary'}"
+                                      th:text="${notification.type}">
+                                </span>
+
+                            <p class="mb-0"
+                               th:text="${notification.message}">
+                            </p>
+
+                        </div>
+
+                        <div class="text-end">
+
+                            <small class="text-secondary"
+                                   th:text="${notification.notificationDate != null ? #dates.format(notification.notificationDate,'yyyy-MM-dd HH:mm') : ''}">
+                            </small>
+
+                            <form th:action="@{/reader/notifications/read}"
+                                  method="post"
+                                  class="mt-2">
+
+                                <input type="hidden"
+                                       th:if="${_csrf != null}"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}">
+
+                                <input type="hidden"
+                                       name="id"
+                                       th:value="${notification.id}">
+
+                                <button class="btn btn-sm btn-outline-secondary"
+                                        type="submit">
+
+                                    <i class="bi bi-check2"></i>
+
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="text-center text-secondary py-5"
+                     th:if="${#lists.isEmpty(notifications)}">
+
+                    No tienes notificaciones.
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script th:src="@{/assets/js/codexlibrary.js}"
+        src="/assets/js/codexlibrary.js">
+</script>
+
+</body>
+</html>

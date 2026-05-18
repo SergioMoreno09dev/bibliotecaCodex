@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head('Cat&aacute;logo')}"></head>
+
+<body>
+
+<div class="app-shell">
+
+    <nav th:replace="~{fragments/nav :: sidebar('catalog','reader')}"></nav>
+
+    <main class="app-content p-3 p-lg-4">
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+
+            <div>
+
+                <h1 class="view-title mb-1">
+                    Cat&aacute;logo
+                </h1>
+
+                <p class="text-secondary mb-0">
+                    Busca libros disponibles para pr&eacute;stamo o reserva
+                </p>
+
+            </div>
+
+            <form class="d-flex gap-2"
+                  th:action="@{/reader/catalog}"
+                  method="get">
+
+                <input class="form-control"
+                       type="search"
+                       name="term"
+                       th:value="${param.term}"
+                       placeholder="T&iacute;tulo, autor o ISBN">
+
+                <button class="btn btn-outline-primary"
+                        type="submit">
+                    <i class="bi bi-search"></i>
+                </button>
+
+            </form>
+
+        </div>
+
+        <div class="alert alert-info"
+             th:if="${flash != null}"
+             th:text="${flash}">
+        </div>
+
+        <div class="row g-3">
+
+            <article class="col-12 col-md-6 col-xl-4"
+                     th:each="book : ${books}">
+
+                <div class="card h-100 shadow-sm">
+
+                    <div class="card-body d-flex flex-column">
+
+                        <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+
+                            <h2 class="h5 mb-0"
+                                th:text="${book.title}">
+                                T&iacute;tulo
+                            </h2>
+
+                            <span class="badge"
+                                  th:classappend="${book.stock > 0 ? ' text-bg-success' : ' text-bg-secondary'}"
+                                  th:text="${book.stock + ' disp.'}">
+                                0 disp.
+                            </span>
+
+                        </div>
+
+                        <p class="text-secondary small mb-2">
+
+                            ISBN
+                            <span th:text="${book.isbn}"></span>
+
+                        </p>
+
+                        <p class="mb-2">
+
+                            <span th:each="author, st : ${book.author}"
+                                  th:text="${author.name + (st.last ? '' : ', ')}">
+                            </span>
+
+                        </p>
+
+                        <p class="text-secondary small mb-3">
+
+                            <span th:text="${book.publisher?.name}"></span>
+
+                            &middot;
+
+                            <span th:text="${book.language}"></span>
+
+                            &middot;
+
+                            <span th:text="${book.year != null ? #dates.format(book.year,'yyyy') : ''}"></span>
+
+                        </p>
+
+                        <div class="mt-auto d-flex gap-2">
+
+                            <form th:action="@{/reader/orders/create}"
+                                  method="post"
+                                  class="flex-fill">
+
+                                <input type="hidden"
+                                       th:if="${_csrf != null}"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}">
+
+                                <input type="hidden"
+                                       name="isbn"
+                                       th:value="${book.isbn}">
+
+                                <button class="btn btn-outline-primary w-100"
+                                        type="submit"
+                                        th:disabled="${book.stock > 0}">
+
+                                    <i class="bi bi-bookmark-plus me-1"></i>
+                                    <span th:text="${book.stock > 0 ? 'Con stock' : 'Reservar'}">
+                                        Reservar
+                                    </span>
+
+                                </button>
+
+                            </form>
+
+                            <a class="btn btn-outline-secondary"
+                               th:href="@{/reader/reviews/new(isbn=${book.isbn})}">
+
+                                <i class="bi bi-star"></i>
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+            <div class="col-12"
+                 th:if="${#lists.isEmpty(books)}">
+
+                <div class="bg-white border rounded-3 text-center text-secondary py-5">
+                    No se encontraron libros.
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script th:src="@{/assets/js/codexlibrary.js}"
+        src="/assets/js/codexlibrary.js">
+</script>
+
+</body>
+</html>

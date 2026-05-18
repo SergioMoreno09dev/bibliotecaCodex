@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Autores')}"></head>
+<body>
+<div class="app-shell">
+    <nav th:replace="~{fragments/nav :: sidebar('authors','admin')}"></nav>
+    <main class="app-content p-3 p-lg-4">
+        <h1 class="view-title mb-4">Autores</h1>
+
+        <div class="alert alert-info"
+             th:if="${flash != null}"
+             th:text="${flash}">
+        </div>
+
+        <section class="bg-white border rounded-3 p-3 mb-4">
+            <form th:action="@{/admin/authors/save}"
+                  method="post"
+                  class="needs-validation"
+                  data-validate="true"
+                  novalidate>
+
+                <input type="hidden"
+                       th:if="${_csrf != null}"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}">
+
+                <input type="hidden"
+                       name="id"
+                       th:value="${author?.id}">
+
+                <div class="row g-3 align-items-end">
+
+                    <div class="col-12 col-md-5">
+                        <label class="form-label" for="name">
+                            Nombre
+                        </label>
+
+                        <input class="form-control"
+                               id="name"
+                               name="name"
+                               th:value="${author?.name}"
+                               required>
+
+                        <div class="text-danger small form-error"
+                             th:text="${errors?.name}">
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-5">
+                        <label class="form-label" for="nation">
+                            Nacionalidad
+                        </label>
+
+                        <input class="form-control"
+                               id="nation"
+                               name="nation"
+                               th:value="${author?.nation}">
+                    </div>
+
+                    <div class="col-12 col-md-2">
+                        <button class="btn btn-primary w-100" type="submit">
+                            <i class="bi bi-save me-1"></i>
+                            Guardar
+                        </button>
+                    </div>
+
+                </div>
+
+            </form>
+        </section>
+
+        <section class="bg-white border rounded-3">
+            <div class="table-responsive">
+
+                <table class="table table-striped mb-0">
+
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Nacionalidad</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+
+                    <tr th:each="item : ${authors}">
+                        <td th:text="${item.id}"></td>
+
+                        <td th:text="${item.name}"></td>
+
+                        <td th:text="${item.nation}"></td>
+
+                        <td class="text-end">
+
+                            <a class="btn btn-sm btn-outline-primary"
+                               th:href="@{/admin/authors/edit(id=${item.id})}">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+
+                            <form class="d-inline"
+                                  th:action="@{/admin/authors/delete}"
+                                  method="post">
+
+                                <input type="hidden"
+                                       th:if="${_csrf != null}"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}">
+
+                                <input type="hidden"
+                                       name="id"
+                                       th:value="${item.id}">
+
+                                <button class="btn btn-sm btn-outline-danger"
+                                        type="submit"
+                                        data-confirm="&iquest;Eliminar este registro?">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+
+                            </form>
+
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(authors)}">
+                        <td colspan="6"
+                            class="text-center text-secondary py-4">
+                            No hay registros.
+                        </td>
+                    </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script th:src="@{/assets/js/codexlibrary.js}"
+        src="/assets/js/codexlibrary.js">
+</script>
+
+</body>
+</html>
