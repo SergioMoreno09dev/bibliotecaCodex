@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Column;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
@@ -23,6 +24,8 @@ public class Notification {
     @Temporal(TemporalType.TIMESTAMP)
     private Date notificationDate;
     private String type;
+
+    @Column(name = "is_read")
     private boolean read;
 
     @ManyToOne
