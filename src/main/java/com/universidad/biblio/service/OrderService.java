@@ -18,11 +18,14 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
+    private final NotificationService notificationService;
 
-    public OrderService(OrderRepository orderRepository, UserRepository userRepository, BookRepository bookRepository) {
+    public OrderService(OrderRepository orderRepository, UserRepository userRepository, BookRepository bookRepository,
+                        NotificationService notificationService) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.bookRepository = bookRepository;
+        this.notificationService = notificationService;
     }
 
     public List<Order> list() {
@@ -45,18 +48,30 @@ public class OrderService {
         }
         Date now = new Date();
         Date expiration = Date.from(LocalDate.now().plusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant());
-        return orderRepository.save(new Order(now, "PENDIENTE", expiration, user, book));
+        Order order = orderRepository.save(new Order(now, "PENDIENTE", expiration, user, book));
+        notificationService.send(user.getId(),
+                "Tu reserva del libro \"" + book.getTitle() + "\" fue creada. Expira el " + expiration,
+                "RESERVA");
+        return order;
     }
 
     public Order cancel(Long id) {
         Order order = find(id);
         order.setStatus("CANCELADA");
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+        notificationService.send(saved.getUser().getId(),
+                "Tu reserva del libro \"" + saved.getBook().getTitle() + "\" fue cancelada.",
+                "RESERVA");
+        return saved;
     }
 
     public Order approve(Long id) {
         Order order = find(id);
         order.setStatus("APROBADA");
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+        notificationService.send(saved.getUser().getId(),
+                "Tu reserva del libro \"" + saved.getBook().getTitle() + "\" fue aprobada.",
+                "RESERVA");
+        return saved;
     }
 }

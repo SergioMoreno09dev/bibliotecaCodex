@@ -4,6 +4,7 @@ import com.universidad.biblio.model.Book;
 import com.universidad.biblio.repository.BookRepository;
 import com.universidad.biblio.repository.LoanRepository;
 import com.universidad.biblio.repository.OrderRepository;
+import com.universidad.biblio.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,11 +15,16 @@ public class BookService {
     private final BookRepository repository;
     private final LoanRepository loanRepository;
     private final OrderRepository orderRepository;
+    private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
-    public BookService(BookRepository repository, LoanRepository loanRepository, OrderRepository orderRepository) {
+    public BookService(BookRepository repository, LoanRepository loanRepository, OrderRepository orderRepository,
+                       UserRepository userRepository, NotificationService notificationService) {
         this.repository = repository;
         this.loanRepository = loanRepository;
         this.orderRepository = orderRepository;
+        this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     public List<Book> list(String term, String category) {
@@ -39,7 +45,12 @@ public class BookService {
         if (book.getStock() < 0) {
             throw new RuntimeException("El stock no puede ser negativo");
         }
-        return repository.save(book);
+        boolean newBook = !repository.existsById(book.getIsbn());
+        Book saved = repository.save(book);
+        if (newBook) {
+            notifyNewBook(saved);
+        }
+        return saved;
     }
 
     public Book update(String isbn, Book book) {
@@ -80,5 +91,13 @@ public class BookService {
 
     public long count() {
         return repository.count();
+    }
+
+    private void notifyNewBook(Book book) {
+        for (var user : userRepository.findByRol("LECTOR")) {
+            notificationService.send(user.getId(),
+                    "Tenemos un nuevo libro disponible en CodexLibrary: \"" + book.getTitle() + "\".",
+                    "LIBRO_NUEVO");
+        }
     }
 }

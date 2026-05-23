@@ -32,6 +32,10 @@ public class ReportService {
         return reportRepository.findAll();
     }
 
+    public List<ExportRequest> listExports() {
+        return exportRequestRepository.findAll();
+    }
+
     public Report find(Long id) {
         return reportRepository.findById(id).orElseThrow(() -> new RuntimeException("Reporte no encontrado"));
     }

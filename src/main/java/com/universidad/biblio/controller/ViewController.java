@@ -8,7 +8,6 @@ import com.universidad.biblio.model.Publisher;
 import com.universidad.biblio.model.Report;
 import com.universidad.biblio.model.User;
 import com.universidad.biblio.repository.UserRepository;
-import com.universidad.biblio.service.AuditLogService;
 import com.universidad.biblio.service.AuthorService;
 import com.universidad.biblio.service.BookService;
 import com.universidad.biblio.service.CategoryService;
@@ -21,7 +20,12 @@ import com.universidad.biblio.service.PublisherService;
 import com.universidad.biblio.service.ReportService;
 import com.universidad.biblio.service.ReviewService;
 import com.universidad.biblio.service.UserServi;
+import com.universidad.biblio.service.AuditLogService;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,6 +34,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -335,6 +341,7 @@ public class ViewController {
     @GetMapping("/admin/reports")
     public String reports(Model model) {
         model.addAttribute("reports", reportService.list());
+        model.addAttribute("exportRequests", reportService.listExports());
         model.addAttribute("report", new Report());
         return "admin/reports";
     }
@@ -350,12 +357,29 @@ public class ViewController {
     }
 
     @PostMapping("/admin/reports/export")
-    public String exportReport(@RequestParam Long id,
-                               @RequestParam String format,
-                               RedirectAttributes redirectAttributes,
-                               Authentication authentication) {
+    public ResponseEntity<byte[]> exportReport(@RequestParam Long id,
+                                               @RequestParam String format,
+                                               @RequestParam(required = false) String filters,
+                                               Authentication authentication) {
         User user = currentUser(authentication);
-        return execute(redirectAttributes, "Exportacion registrada.", () -> reportService.export(id, user.getId(), format, ""), "/admin/reports");
+        Report report = reportService.find(id);
+        String normalizedFormat = format == null ? "TXT" : format.trim().toUpperCase();
+        String appliedFilters = filters == null ? "" : filters.trim();
+        reportService.export(id, user.getId(), normalizedFormat, appliedFilters);
+
+        byte[] body = renderReport(report, normalizedFormat, appliedFilters).getBytes(StandardCharsets.UTF_8);
+        String extension = "CSV".equals(normalizedFormat) ? "csv" : "txt";
+        MediaType mediaType = "CSV".equals(normalizedFormat)
+                ? MediaType.parseMediaType("text/csv")
+                : MediaType.TEXT_PLAIN;
+
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                        .filename("reporte-" + id + "." + extension, StandardCharsets.UTF_8)
+                        .build()
+                        .toString())
+                .body(body);
     }
 
     @GetMapping("/admin/permissions")
@@ -467,4 +491,33 @@ public class ViewController {
     private void flash(RedirectAttributes redirectAttributes, String message) {
         redirectAttributes.addFlashAttribute("flash", message);
     }
+
+    private String renderReport(Report report, String format, String filters) {
+        String generatedAt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        if ("CSV".equals(format)) {
+            return "campo,valor\n"
+                    + "id," + csv(report.getId()) + "\n"
+                    + "titulo," + csv(report.getTitle()) + "\n"
+                    + "tipo," + csv(report.getType()) + "\n"
+                    + "filtros," + csv(filters) + "\n"
+                    + "fecha_exportacion," + csv(generatedAt) + "\n"
+                    + "contenido," + csv(report.getContent()) + "\n";
+        }
+
+        return "Reporte: " + nullSafe(report.getTitle()) + "\n"
+                + "Tipo: " + nullSafe(report.getType()) + "\n"
+                + "Filtros aplicados: " + nullSafe(filters) + "\n"
+                + "Fecha de exportacion: " + generatedAt + "\n\n"
+                + nullSafe(report.getContent());
+    }
+
+    private String csv(Object value) {
+        String text = nullSafe(value);
+        return "\"" + text.replace("\"", "\"\"") + "\"";
+    }
+
+    private String nullSafe(Object value) {
+        return value == null ? "" : value.toString();
+    }
+
 }

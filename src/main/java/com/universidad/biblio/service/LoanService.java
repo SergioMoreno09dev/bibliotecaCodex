@@ -24,13 +24,16 @@ public class LoanService {
     private final LoanHistoryRepository historyRepository;
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
+    private final NotificationService notificationService;
 
     public LoanService(LoanRepository loanRepository, LoanHistoryRepository historyRepository,
-                       UserRepository userRepository, BookRepository bookRepository) {
+                       UserRepository userRepository, BookRepository bookRepository,
+                       NotificationService notificationService) {
         this.loanRepository = loanRepository;
         this.historyRepository = historyRepository;
         this.userRepository = userRepository;
         this.bookRepository = bookRepository;
+        this.notificationService = notificationService;
     }
 
     public List<Loan> list() {
@@ -57,6 +60,9 @@ public class LoanService {
         loan.setStatus(ACTIVE);
         Loan saved = loanRepository.save(loan);
         historyRepository.save(new loanHistory("NUEVO", ACTIVE, new Date(), saved));
+        notificationService.send(user.getId(),
+                "Se registro un prestamo del libro \"" + book.getTitle() + "\". Fecha de devolucion: " + returnDate,
+                "PRESTAMO");
         return saved;
     }
 
@@ -68,6 +74,9 @@ public class LoanService {
             loan.setStatus(RETURNED);
             loan.getBook().setStock(loan.getBook().getStock() + 1);
             historyRepository.save(new loanHistory(previous, RETURNED, new Date(), loan));
+            notificationService.send(loan.getUser().getId(),
+                    "Tu prestamo del libro \"" + loan.getBook().getTitle() + "\" fue marcado como devuelto.",
+                    "PRESTAMO");
         }
         return loanRepository.save(loan);
     }
@@ -82,6 +91,9 @@ public class LoanService {
         String previous = loan.getStatus();
         loan.setStatus(ACTIVE);
         historyRepository.save(new loanHistory(previous, ACTIVE, new Date(), loan));
+        notificationService.send(loan.getUser().getId(),
+                "Tu prestamo del libro \"" + loan.getBook().getTitle() + "\" fue extendido. Nueva fecha de devolucion: " + newReturnDate,
+                "PRESTAMO");
         return loanRepository.save(loan);
     }
 
@@ -93,6 +105,9 @@ public class LoanService {
                 loan.setStatus(EXPIRED);
                 historyRepository.save(new loanHistory(ACTIVE, EXPIRED, new Date(), loan));
                 loanRepository.save(loan);
+                notificationService.send(loan.getUser().getId(),
+                        "Tu prestamo del libro \"" + loan.getBook().getTitle() + "\" esta vencido.",
+                        "VENCIMIENTO");
             }
         }
     }

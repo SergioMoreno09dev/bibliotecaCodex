@@ -34,7 +34,7 @@ public class UserServi {
                 encoder.encode(user.getPassword())
         );
 
-        user.setRol("LECTOR");
+        user.setRol(normalizeRole(user.getRol()));
 
         repo.save(user);
     }

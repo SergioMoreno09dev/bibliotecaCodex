@@ -4,16 +4,18 @@
 <nav th:fragment="sidebar(active, role)"
      class="app-sidebar navbar navbar-expand-lg align-items-start p-3">
 
-    <div class="container-fluid d-lg-block p-0">
+    <div class="container-fluid d-lg-flex flex-lg-column p-0">
 
-        <a class="navbar-brand fw-semibold"
+        <a class="navbar-brand app-brand fw-semibold"
            th:href="${role == 'reader'} ? @{/reader/catalog} : @{/dashboard}">
 
-            <i class="bi bi-journal-bookmark me-2"
+            <span class="app-brand-icon">
+                <i class="bi bi-journal-bookmark"
                aria-hidden="true">
-            </i>
+                </i>
+            </span>
 
-            CodexLibrary
+            <span>CodexLibrary</span>
 
         </a>
 
@@ -29,10 +31,15 @@
 
         </button>
 
-        <div class="collapse navbar-collapse d-lg-block mt-3"
+        <div class="collapse navbar-collapse d-lg-flex flex-lg-column mt-3"
              id="mainNav">
 
-            <div class="nav nav-pills flex-column gap-1"
+            <div class="sidebar-section text-uppercase small fw-semibold mb-2"
+                 th:text="${role == 'admin'} ? 'Administración' : 'Lector'">
+                Menú
+            </div>
+
+            <div class="nav nav-pills flex-column gap-1 w-100"
                  th:if="${role == 'admin'}">
 
                 <a class="nav-link"
@@ -163,7 +170,7 @@
 
             </div>
 
-            <div class="nav nav-pills flex-column gap-1"
+            <div class="nav nav-pills flex-column gap-1 w-100"
                  th:if="${role == 'reader'}">
 
                 <a class="nav-link"
@@ -215,14 +222,14 @@
 
             <form th:action="@{/logout}"
                   method="post"
-                  class="mt-3">
+                  class="sidebar-logout mt-3 w-100">
 
                 <input type="hidden"
                        th:if="${_csrf != null}"
                        th:name="${_csrf.parameterName}"
                        th:value="${_csrf.token}">
 
-                <button class="btn btn-outline-light w-100"
+                <button class="btn btn-logout w-100"
                         type="submit">
 
                     <i class="bi bi-box-arrow-right me-2"></i>
