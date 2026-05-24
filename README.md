@@ -175,3 +175,7 @@ El archivo generado queda en `target/`.
 ## Envio correo gmail
 ![notificacioCorreo](evidenciasCodex/envioNotificacionCorreo.png)
 -Se realizo el envio de un correo a un usuario lector notificandole acerca de libros disponibles para su reserva
+
+## Credenciales correo del proyecto
+- Correo codex8235@gmail.com
+- Contraseña: codex9999
