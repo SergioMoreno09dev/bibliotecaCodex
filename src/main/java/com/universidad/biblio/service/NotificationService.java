@@ -49,7 +49,13 @@ public class NotificationService {
         if (type == null || type.isBlank()) {
             return "Notificacion CodexLibrary";
         }
-        return "CodexLibrary - " + type;
+        return switch (type) {
+            case "PRESTAMO" -> "CodexLibrary - Actualizacion de prestamo";
+            case "VENCIMIENTO" -> "CodexLibrary - Prestamo vencido";
+            case "RESERVA" -> "CodexLibrary - Actualizacion de reserva";
+            case "LIBRO_NUEVO" -> "CodexLibrary - Nuevo libro disponible";
+            default -> "CodexLibrary - " + type;
+        };
     }
 
     public Notification markAsRead(Long id) {
