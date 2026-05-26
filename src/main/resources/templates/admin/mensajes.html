@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: head('Mensajes')}"></head>
+
+<body>
+
+<div class="app-shell">
+
+    <nav th:replace="~{fragments/nav :: sidebar('messages','admin')}"></nav>
+
+    <main class="app-content p-3 p-lg-4">
+
+        <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
+            <div>
+                <h1 class="view-title mb-1">Mensajes</h1>
+                <p class="text-secondary mb-0">
+                    <span th:text="${noLeidos}">0</span>
+                    sin leer
+                </p>
+            </div>
+        </div>
+
+        <div class="alert alert-info"
+             th:if="${flash != null}"
+             th:text="${flash}">
+        </div>
+
+        <section class="bg-white border rounded-3 p-3 mb-4">
+            <form th:action="@{/admin/mensajes/send}"
+                  method="post"
+                  class="needs-validation"
+                  data-validate="true"
+                  novalidate>
+
+                <input type="hidden"
+                       th:if="${_csrf != null}"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}">
+
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label" for="destinatario">Destinatario</label>
+                        <select class="form-select"
+                                id="destinatario"
+                                name="destinatario"
+                                required>
+                            <option value="">Selecciona un usuario</option>
+                            <option th:each="user : ${users}"
+                                    th:value="${user.email}"
+                                    th:text="${user.name + ' - ' + user.email}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-8">
+                        <label class="form-label" for="asunto">Asunto</label>
+                        <input class="form-control"
+                               id="asunto"
+                               name="asunto"
+                               maxlength="255"
+                               required>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label" for="contenido">Mensaje</label>
+                        <textarea class="form-control"
+                                  id="contenido"
+                                  name="contenido"
+                                  rows="4"
+                                  required></textarea>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary mt-3" type="submit">
+                    <i class="bi bi-send me-1"></i>
+                    Enviar
+                </button>
+            </form>
+        </section>
+
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active"
+                        data-bs-toggle="tab"
+                        data-bs-target="#entrada"
+                        type="button"
+                        role="tab">
+                    Bandeja de entrada
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link"
+                        data-bs-toggle="tab"
+                        data-bs-target="#enviados"
+                        type="button"
+                        role="tab">
+                    Enviados
+                </button>
+            </li>
+        </ul>
+
+        <section class="bg-white border border-top-0 rounded-bottom-3">
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="entrada" role="tabpanel">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item"
+                             th:each="mensaje : ${entrada}"
+                             th:classappend="${mensaje.leido ? '' : ' bg-primary-subtle'}">
+                            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <strong th:text="${mensaje.asunto}">Asunto</strong>
+                                        <span class="badge text-bg-primary" th:if="${!mensaje.leido}">Nuevo</span>
+                                    </div>
+                                    <p class="text-secondary mb-2">
+                                        De
+                                        <span th:text="${mensaje.emisor?.name}">Usuario</span>
+                                    </p>
+                                    <p class="mb-0" th:text="${mensaje.contenido}">Contenido</p>
+                                </div>
+                                <div class="text-lg-end">
+                                    <small class="text-secondary"
+                                           th:text="${mensaje.fechaEnvio != null ? #dates.format(mensaje.fechaEnvio,'yyyy-MM-dd HH:mm') : ''}">
+                                    </small>
+                                    <form th:if="${!mensaje.leido}"
+                                          th:action="@{/admin/mensajes/read}"
+                                          method="post"
+                                          class="mt-2">
+                                        <input type="hidden"
+                                               th:if="${_csrf != null}"
+                                               th:name="${_csrf.parameterName}"
+                                               th:value="${_csrf.token}">
+                                        <input type="hidden" name="id" th:value="${mensaje.id}">
+                                        <button class="btn btn-sm btn-outline-secondary" type="submit">
+                                            <i class="bi bi-check2 me-1"></i>
+                                            Leido
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center text-secondary py-5" th:if="${#lists.isEmpty(entrada)}">
+                            No tienes mensajes recibidos.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="enviados" role="tabpanel">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item" th:each="mensaje : ${enviados}">
+                            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                                <div>
+                                    <strong th:text="${mensaje.asunto}">Asunto</strong>
+                                    <p class="text-secondary mb-2">
+                                        Para
+                                        <span th:text="${mensaje.receptor?.name}">Usuario</span>
+                                    </p>
+                                    <p class="mb-0" th:text="${mensaje.contenido}">Contenido</p>
+                                </div>
+                                <small class="text-secondary"
+                                       th:text="${mensaje.fechaEnvio != null ? #dates.format(mensaje.fechaEnvio,'yyyy-MM-dd HH:mm') : ''}">
+                                </small>
+                            </div>
+                        </div>
+                        <div class="text-center text-secondary py-5" th:if="${#lists.isEmpty(enviados)}">
+                            No has enviado mensajes.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script th:src="@{/assets/js/codexlibrary.js}"
+        src="/assets/js/codexlibrary.js">
+</script>
+
+</body>
+</html>

@@ -13,6 +13,7 @@ import com.universidad.biblio.service.BookService;
 import com.universidad.biblio.service.CategoryService;
 import com.universidad.biblio.service.FineService;
 import com.universidad.biblio.service.LoanService;
+import com.universidad.biblio.service.MensajeService;
 import com.universidad.biblio.service.NotificationService;
 import com.universidad.biblio.service.OrderService;
 import com.universidad.biblio.service.PermissionService;
@@ -38,6 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Controller
 public class ViewController {
@@ -51,6 +53,7 @@ public class ViewController {
     private final FineService fineService;
     private final UserServi userService;
     private final ReviewService reviewService;
+    private final MensajeService mensajeService;
     private final NotificationService notificationService;
     private final ReportService reportService;
     private final PermissionService permissionService;
@@ -60,7 +63,7 @@ public class ViewController {
     public ViewController(BookService bookService, AuthorService authorService, CategoryService categoryService,
                           PublisherService publisherService, LoanService loanService, OrderService orderService,
                           FineService fineService, UserServi userService, ReviewService reviewService,
-                          NotificationService notificationService, ReportService reportService,
+                          MensajeService mensajeService, NotificationService notificationService, ReportService reportService,
                           PermissionService permissionService, AuditLogService auditLogService,
                           UserRepository userRepository) {
         this.bookService = bookService;
@@ -72,6 +75,7 @@ public class ViewController {
         this.fineService = fineService;
         this.userService = userService;
         this.reviewService = reviewService;
+        this.mensajeService = mensajeService;
         this.notificationService = notificationService;
         this.reportService = reportService;
         this.permissionService = permissionService;
@@ -330,6 +334,33 @@ public class ViewController {
         return "admin/notifications";
     }
 
+    @GetMapping("/admin/mensajes")
+    public String adminMensajes(Model model, Authentication authentication) {
+        addMensajesModel(model, authentication);
+        return "admin/mensajes";
+    }
+
+    @PostMapping("/admin/mensajes/send")
+    public String sendAdminMensaje(@RequestParam String destinatario,
+                                   @RequestParam String asunto,
+                                   @RequestParam String contenido,
+                                   RedirectAttributes redirectAttributes,
+                                   Authentication authentication) {
+        return execute(redirectAttributes, "Mensaje enviado.",
+                () -> mensajeService.enviar(authentication.getName(), destinatario, asunto, contenido),
+                "/admin/mensajes");
+    }
+
+    @PostMapping("/admin/mensajes/read")
+    public String markAdminMensajeRead(@RequestParam Long id,
+                                       RedirectAttributes redirectAttributes,
+                                       Authentication authentication) {
+        return execute(redirectAttributes, "Mensaje marcado como leido.",
+                () -> mensajeService.marcarComoLeido(id, authentication.getName())
+                        .orElseThrow(() -> new RuntimeException("Mensaje no encontrado")),
+                "/admin/mensajes");
+    }
+
     @PostMapping("/admin/notifications/send")
     public String sendNotification(@RequestParam int userId,
                                    @RequestParam String message,
@@ -437,6 +468,33 @@ public class ViewController {
         return "reader/notifications";
     }
 
+    @GetMapping("/reader/mensajes")
+    public String readerMensajes(Model model, Authentication authentication) {
+        addMensajesModel(model, authentication);
+        return "reader/mensajes";
+    }
+
+    @PostMapping("/reader/mensajes/send")
+    public String sendReaderMensaje(@RequestParam String destinatario,
+                                    @RequestParam String asunto,
+                                    @RequestParam String contenido,
+                                    RedirectAttributes redirectAttributes,
+                                    Authentication authentication) {
+        return execute(redirectAttributes, "Mensaje enviado.",
+                () -> mensajeService.enviar(authentication.getName(), destinatario, asunto, contenido),
+                "/reader/mensajes");
+    }
+
+    @PostMapping("/reader/mensajes/read")
+    public String markReaderMensajeRead(@RequestParam Long id,
+                                        RedirectAttributes redirectAttributes,
+                                        Authentication authentication) {
+        return execute(redirectAttributes, "Mensaje marcado como leido.",
+                () -> mensajeService.marcarComoLeido(id, authentication.getName())
+                        .orElseThrow(() -> new RuntimeException("Mensaje no encontrado")),
+                "/reader/mensajes");
+    }
+
     @PostMapping("/reader/notifications/read")
     public String markNotificationRead(@RequestParam Long id, RedirectAttributes redirectAttributes) {
         return execute(redirectAttributes, "Notificacion marcada como leida.", () -> notificationService.markAsRead(id), "/reader/notifications");
@@ -462,6 +520,19 @@ public class ViewController {
         model.addAttribute("authors", authorService.list());
         model.addAttribute("categories", categoryService.list());
         model.addAttribute("publishers", publisherService.list());
+    }
+
+    private void addMensajesModel(Model model, Authentication authentication) {
+        User user = currentUser(authentication);
+        String email = authentication == null ? null : authentication.getName();
+        model.addAttribute("entrada", user == null ? List.of() : mensajeService.bandejaEntrada(email));
+        model.addAttribute("enviados", user == null ? List.of() : mensajeService.enviados(email));
+        model.addAttribute("noLeidos", user == null ? 0 : mensajeService.contarNoLeidos(email));
+        model.addAttribute("users", user == null
+                ? userService.list()
+                : userService.list().stream()
+                .filter(item -> !Objects.equals(item.getId(), user.getId()))
+                .toList());
     }
 
     private User currentUser(Authentication authentication) {

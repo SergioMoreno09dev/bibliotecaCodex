@@ -12,6 +12,10 @@ public interface UserRepository
 
     Optional<User> findByEmail(String email);
 
+    Optional<User> findByEmailIgnoreCase(String email);
+
+    Optional<User> findFirstByNameIgnoreCase(String name);
+
     List<User> findByRol(String rol);
 
     boolean existsByEmail(String email);
