@@ -4,13 +4,16 @@ import com.universidad.biblio.model.Message;
 import com.universidad.biblio.model.User;
 import com.universidad.biblio.repository.UserRepository;
 import com.universidad.biblio.service.MessageService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/messages")
+@RequestMapping({"/api/messages", "/api/mensajes", "/api/mensjaes"})
 public class MessageController {
 
     private final MessageService service;
@@ -37,8 +40,13 @@ public class MessageController {
         return Boolean.TRUE.equals(sent) ? service.bySender(currentUserId) : service.byReceiver(currentUserId);
     }
 
+    @GetMapping("/bandeja-entrada")
+    public List<Message> inbox() {
+        return service.byReceiver(currentUserId());
+    }
+
     @PostMapping
-    public Message send(@RequestBody MessageRequest request) {
+    public Message send(@Valid @RequestBody MessageRequest request) {
         int senderId = currentUserId();
         return service.send(senderId, request.receiverId(), request.subject(), request.content());
     }
@@ -60,6 +68,8 @@ public class MessageController {
         return user.getId();
     }
 
-    public record MessageRequest(int receiverId, String subject, String content) {
+    public record MessageRequest(@NotNull Integer receiverId,
+                                 @NotBlank String subject,
+                                 @NotBlank String content) {
     }
 }
