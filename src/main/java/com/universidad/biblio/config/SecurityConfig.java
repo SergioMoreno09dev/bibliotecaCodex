@@ -54,7 +54,8 @@ public class SecurityConfig {
                                 "/assets/**",
                                 "/h2-console/**"
                         ).permitAll()
-                        .requestMatchers("/dashboard", "/admin/**", "/api/**").hasRole("ADMIN")
+                        .requestMatchers("/dashboard", "/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/**").authenticated()
                         .requestMatchers("/reader/**").hasRole("LECTOR")
 
                         .anyRequest().authenticated()
