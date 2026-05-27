@@ -55,6 +55,7 @@ public class ViewController {
     private final ReportService reportService;
     private final PermissionService permissionService;
     private final AuditLogService auditLogService;
+    private final com.universidad.biblio.service.SolicitudService solicitudService;
     private final UserRepository userRepository;
 
     public ViewController(BookService bookService, AuthorService authorService, CategoryService categoryService,
@@ -62,6 +63,7 @@ public class ViewController {
                           FineService fineService, UserServi userService, ReviewService reviewService,
                           NotificationService notificationService, ReportService reportService,
                           PermissionService permissionService, AuditLogService auditLogService,
+                          com.universidad.biblio.service.SolicitudService solicitudService,
                           UserRepository userRepository) {
         this.bookService = bookService;
         this.authorService = authorService;
@@ -76,7 +78,24 @@ public class ViewController {
         this.reportService = reportService;
         this.permissionService = permissionService;
         this.auditLogService = auditLogService;
+        this.solicitudService = solicitudService;
         this.userRepository = userRepository;
+    }
+
+    @GetMapping("/admin/solicitudes/panel")
+    public String solicitudesPanel(Model model) {
+        long total = solicitudService.countAll();
+        long pendientes = solicitudService.countByState("pendiente");
+        long aprobadas = solicitudService.countByState("aprobada");
+        long rechazadas = solicitudService.countByState("rechazada");
+
+        model.addAttribute("totalSolicitudes", total);
+        model.addAttribute("pendientes", pendientes);
+        model.addAttribute("aprobadas", aprobadas);
+        model.addAttribute("rechazadas", rechazadas);
+        model.addAttribute("solicitudes", solicitudService.listAll());
+
+        return "admin/solicitudes-panel";
     }
 
     @GetMapping({"/admin/books", "/admin/books/edit"})

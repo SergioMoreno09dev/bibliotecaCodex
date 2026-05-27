@@ -7,4 +7,7 @@ import java.util.List;
 
 public interface SolicitudRepository extends JpaRepository<Solicitud, Long> {
     List<Solicitud> findByRequesterIdOrderByCreatedAtDesc(int requesterId);
+
+    long countByState(String state);
+    long count();
 }

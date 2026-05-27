@@ -50,6 +50,14 @@ public class SolicitudService {
         return solicitudRepository.findAll();
     }
 
+    public long countAll() {
+        return solicitudRepository.count();
+    }
+
+    public long countByState(String state) {
+        return solicitudRepository.countByState(state);
+    }
+
     public Solicitud approve(Long id, String observation) {
         Solicitud s = solicitudRepository.findById(id).orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
         s.setState(STATE_APPROVED);
