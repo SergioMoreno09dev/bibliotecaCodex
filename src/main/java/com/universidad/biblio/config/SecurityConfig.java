@@ -5,6 +5,7 @@ import com.universidad.biblio.service.UserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -55,6 +56,12 @@ public class SecurityConfig {
                                 "/h2-console/**"
                         ).permitAll()
                         .requestMatchers("/api/mensajes/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/solicitudes").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/solicitudes/mis-solicitudes").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/solicitudes").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/solicitudes/*/aprobar").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/solicitudes/*/rechazar").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/admin/solicitudes/panel").hasRole("ADMIN")
                         .requestMatchers("/dashboard", "/admin/**", "/api/**").hasRole("ADMIN")
                         .requestMatchers("/reader/**").hasRole("LECTOR")
 
@@ -78,6 +85,10 @@ public class SecurityConfig {
 
                 .exceptionHandling(exceptions -> exceptions
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            if (request.getRequestURI().startsWith("/api/")) {
+                                response.sendError(403);
+                                return;
+                            }
                             boolean admin = request.isUserInRole("ADMIN");
                             response.sendRedirect(admin ? "/dashboard" : "/reader/catalog");
                         })

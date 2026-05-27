@@ -106,6 +106,15 @@
                 </a>
 
                 <a class="nav-link"
+                   th:classappend="${active == 'solicitudes'} ? ' active'"
+                   th:href="@{/admin/solicitudes/panel}">
+
+                    <i class="bi bi-inbox me-2"></i>
+                    Solicitudes
+
+                </a>
+
+                <a class="nav-link"
                    th:classappend="${active == 'fines'} ? ' active'"
                    th:href="@{/admin/fines}">
 

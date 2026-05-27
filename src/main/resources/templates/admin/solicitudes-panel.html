@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Panel de Solicitudes')}"></head>
+<body>
+<div class="app-shell">
+    <nav th:replace="~{fragments/nav :: sidebar('solicitudes','admin')}"></nav>
+
+    <main class="app-content p-3 p-lg-4">
+
+        <h1 class="view-title mb-4">Panel de solicitudes</h1>
+
+        <section class="row g-3 mb-4">
+
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="bg-white border rounded-3 p-3 h-100">
+                    <div class="text-secondary small text-uppercase fw-semibold">Total general</div>
+                    <div class="display-6 fw-semibold" th:text="${totalSolicitudes}">0</div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="bg-warning-subtle border border-warning rounded-3 p-3 h-100">
+                    <div class="text-warning-emphasis small text-uppercase fw-semibold">Pendientes</div>
+                    <div class="display-6 fw-semibold text-warning-emphasis" th:text="${totalPendientes}">0</div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="bg-success-subtle border border-success rounded-3 p-3 h-100">
+                    <div class="text-success-emphasis small text-uppercase fw-semibold">Aprobadas</div>
+                    <div class="display-6 fw-semibold text-success-emphasis" th:text="${totalAprobadas}">0</div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-xl-3">
+                <div class="bg-danger-subtle border border-danger rounded-3 p-3 h-100">
+                    <div class="text-danger-emphasis small text-uppercase fw-semibold">Rechazadas</div>
+                    <div class="display-6 fw-semibold text-danger-emphasis" th:text="${totalRechazadas}">0</div>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="bg-white border rounded-3">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead>
+                    <tr>
+                        <th>Usuario solicitante</th>
+                        <th>Tipo</th>
+                        <th>Estado</th>
+                        <th>Fecha de creación</th>
+                        <th>Observación</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+
+                    <tr th:each="solicitud : ${solicitudes}"
+                        th:classappend="${solicitud.estado?.name() == 'APROBADA' ? ' table-success' : (solicitud.estado?.name() == 'RECHAZADA' ? ' table-danger' : ' table-warning')}">
+
+                        <td>
+                            <div class="fw-semibold"
+                                 th:text="${solicitud.solicitante?.name ?: 'Sin nombre'}">
+                                Usuario
+                            </div>
+                            <div class="small text-secondary"
+                                 th:text="${solicitud.solicitante?.email}">
+                                usuario@correo.com
+                            </div>
+                        </td>
+
+                        <td th:text="${solicitud.tipo}">SOPORTE</td>
+
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${solicitud.estado?.name() == 'APROBADA' ? ' text-bg-success' : (solicitud.estado?.name() == 'RECHAZADA' ? ' text-bg-danger' : ' text-bg-warning')}"
+                                  th:text="${solicitud.estado}">
+                                PENDIENTE
+                            </span>
+                        </td>
+
+                        <td th:text="${solicitud.fechaCreacion != null ? #temporals.format(solicitud.fechaCreacion, 'yyyy-MM-dd HH:mm') : ''}">
+                            2026-05-26 19:00
+                        </td>
+
+                        <td th:text="${solicitud.observacion != null && !solicitud.observacion.isBlank() ? solicitud.observacion : 'Sin observación'}">
+                            Sin observación
+                        </td>
+
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(solicitudes)}">
+                        <td colspan="5"
+                            class="text-center text-secondary py-4">
+                            No hay solicitudes registradas.
+                        </td>
+                    </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script th:src="@{/assets/js/codexlibrary.js}"
+        src="/assets/js/codexlibrary.js">
+</script>
+
+</body>
+</html>
