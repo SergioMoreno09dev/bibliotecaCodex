@@ -55,6 +55,8 @@ public class SecurityConfig {
                                 "/h2-console/**"
                         ).permitAll()
                         .requestMatchers("/dashboard", "/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/solicitudes/*/approve", "/api/solicitudes/*/reject",
+                                         "/api/solicitudes/*/aprobar", "/api/solicitudes/*/rechazar").hasRole("ADMIN")
                         .requestMatchers("/api/**").authenticated()
                         .requestMatchers("/reader/**").hasRole("LECTOR")
 

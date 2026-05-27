@@ -22,6 +22,7 @@ public class SolicitudController {
     }
 
     @PostMapping
+    @ResponseStatus(org.springframework.http.HttpStatus.CREATED)
     public Solicitud create(@RequestBody CreateRequest request) {
         int requesterId = currentUserId();
         return service.create(requesterId, request.type(), request.description());
@@ -51,6 +52,18 @@ public class SolicitudController {
 
     @PatchMapping("/{id}/reject")
     public Solicitud reject(@PathVariable Long id, @RequestBody ResolveRequest request) {
+        requireAdmin();
+        return service.reject(id, request.observation());
+    }
+
+    @PutMapping("/{id}/aprobar")
+    public Solicitud aprobar(@PathVariable Long id, @RequestBody ResolveRequest request) {
+        requireAdmin();
+        return service.approve(id, request.observation());
+    }
+
+    @PutMapping("/{id}/rechazar")
+    public Solicitud rechazar(@PathVariable Long id, @RequestBody ResolveRequest request) {
         requireAdmin();
         return service.reject(id, request.observation());
     }
