@@ -84,6 +84,13 @@ public class SecurityConfig {
                 )
 
                 .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            if (request.getRequestURI().startsWith("/api/")) {
+                                response.sendError(401);
+                                return;
+                            }
+                            response.sendRedirect("/login");
+                        })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             if (request.getRequestURI().startsWith("/api/")) {
                                 response.sendError(403);
